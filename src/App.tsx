@@ -8,8 +8,17 @@ function App() {
   const [currentView, setCurrentView] = useState<"dashboard" | "upload">(
     "dashboard"
   );
-  const { reportData, uploadedFiles, loading, error, uploadFile, deleteFile } =
-    useReportData();
+  const {
+    reportData,
+    uploadedFiles,
+    loading,
+    error,
+    uploadFile,
+    deleteFile,
+    deleteRecord,
+    deleteMultipleRecords,
+    resetAllData,
+  } = useReportData();
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -125,7 +134,11 @@ function App() {
                 </button>
               </div>
             ) : (
-              <Dashboard data={reportData} />
+              <Dashboard
+                data={reportData}
+                onDeleteRecord={deleteRecord}
+                onDeleteMultipleRecords={deleteMultipleRecords}
+              />
             )}
           </>
         )}
