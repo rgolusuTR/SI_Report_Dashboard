@@ -2,12 +2,13 @@ import React, { useState } from "react";
 import { Header } from "./components/Header";
 import { FileUpload } from "./components/FileUpload";
 import { Dashboard } from "./components/Dashboard";
+import { SiteManagement } from "./components/SiteManagement";
 import { useReportData } from "./hooks/useReportData";
 
 function App() {
-  const [currentView, setCurrentView] = useState<"dashboard" | "upload">(
-    "dashboard"
-  );
+  const [currentView, setCurrentView] = useState<
+    "dashboard" | "upload" | "siteManagement"
+  >("dashboard");
   const {
     reportData,
     uploadedFiles,
@@ -134,12 +135,20 @@ function App() {
                 <p className="text-gray-400 mb-6">
                   Upload some Siteimprove reports to get started
                 </p>
-                <button
-                  onClick={() => setCurrentView("upload")}
-                  className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-                >
-                  Upload Reports
-                </button>
+                <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                  <button
+                    onClick={() => setCurrentView("upload")}
+                    className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                  >
+                    Upload Reports
+                  </button>
+                  <button
+                    onClick={() => setCurrentView("siteManagement")}
+                    className="px-6 py-3 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors"
+                  >
+                    Manage Websites
+                  </button>
+                </div>
               </div>
             ) : (
               <Dashboard
@@ -153,6 +162,16 @@ function App() {
               />
             )}
           </>
+        )}
+
+        {currentView === "siteManagement" && (
+          <SiteManagement
+            websites={websites}
+            onAddWebsite={addWebsite}
+            onUpdateWebsite={updateWebsite}
+            onDeleteWebsite={deleteWebsite}
+            onBack={() => setCurrentView("dashboard")}
+          />
         )}
       </main>
     </div>
