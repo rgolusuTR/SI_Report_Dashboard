@@ -1,22 +1,37 @@
 import React, { useState, useEffect } from "react";
-import { BarChart, TrendingUp, FileText, AlertCircle } from "lucide-react";
-import { FilterState, ReportData } from "../types";
+import {
+  BarChart,
+  TrendingUp,
+  FileText,
+  AlertCircle,
+  Settings,
+} from "lucide-react";
+import { FilterState, ReportData, Website } from "../types";
 import { FilterPanel } from "./FilterPanel";
 import { Charts } from "./Charts";
 import { DataTable } from "./DataTable";
+import { WebsiteManager } from "./WebsiteManager";
 import { exportDashboardToExcel } from "../utils/exportUtils";
 import { format, subDays } from "date-fns";
 
 interface DashboardProps {
   data: ReportData[];
+  websites: Website[];
   onDeleteRecord?: (recordId: string) => void;
   onDeleteMultipleRecords?: (recordIds: string[]) => void;
+  onAddWebsite?: (website: Omit<Website, "id">) => void;
+  onUpdateWebsite?: (id: string, website: Omit<Website, "id">) => void;
+  onDeleteWebsite?: (id: string) => void;
 }
 
 export const Dashboard: React.FC<DashboardProps> = ({
   data,
+  websites,
   onDeleteRecord,
   onDeleteMultipleRecords,
+  onAddWebsite,
+  onUpdateWebsite,
+  onDeleteWebsite,
 }) => {
   const [filters, setFilters] = useState<FilterState>({
     websites: [],
@@ -151,7 +166,18 @@ export const Dashboard: React.FC<DashboardProps> = ({
             onFiltersChange={setFilters}
             totalRecords={data.length}
             filteredRecords={filteredData.length}
+            websites={websites}
           />
+
+          {/* Website Management */}
+          {onAddWebsite && onUpdateWebsite && onDeleteWebsite && (
+            <WebsiteManager
+              websites={websites}
+              onAddWebsite={onAddWebsite}
+              onUpdateWebsite={onUpdateWebsite}
+              onDeleteWebsite={onDeleteWebsite}
+            />
+          )}
         </div>
 
         {/* Main Content */}

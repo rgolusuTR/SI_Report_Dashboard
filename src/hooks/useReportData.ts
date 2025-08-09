@@ -1,18 +1,21 @@
 import { useState, useCallback, useEffect } from "react";
-import { ReportData, UploadedFile, FilterState } from "../types";
+import { ReportData, UploadedFile, FilterState, Website } from "../types";
 import { processFile } from "../utils/fileParser";
 import { generateDummyData, dummyUploadedFiles } from "../data/dummyData";
+import { WEBSITES } from "../constants";
 
 const STORAGE_KEYS = {
   REPORT_DATA: "siteimprove_report_data",
   UPLOADED_FILES: "siteimprove_uploaded_files",
   DELETED_FILES: "siteimprove_deleted_files",
   DELETED_RECORDS: "siteimprove_deleted_records",
+  WEBSITES: "siteimprove_websites",
 };
 
 export const useReportData = () => {
   const [reportData, setReportData] = useState<ReportData[]>([]);
   const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>([]);
+  const [websites, setWebsites] = useState<Website[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -22,12 +25,21 @@ export const useReportData = () => {
     const savedUploadedFiles = localStorage.getItem(
       STORAGE_KEYS.UPLOADED_FILES
     );
+    const savedWebsites = localStorage.getItem(STORAGE_KEYS.WEBSITES);
     const deletedFiles = JSON.parse(
       localStorage.getItem(STORAGE_KEYS.DELETED_FILES) || "[]"
     );
     const deletedRecords = JSON.parse(
       localStorage.getItem(STORAGE_KEYS.DELETED_RECORDS) || "[]"
     );
+
+    // Initialize websites
+    if (savedWebsites) {
+      setWebsites(JSON.parse(savedWebsites));
+    } else {
+      setWebsites(WEBSITES);
+      localStorage.setItem(STORAGE_KEYS.WEBSITES, JSON.stringify(WEBSITES));
+    }
 
     if (savedReportData && savedUploadedFiles) {
       // Load from localStorage
@@ -241,6 +253,7 @@ export const useReportData = () => {
 
     setReportData(initialReportData);
     setUploadedFiles(initialUploadedFiles);
+    setWebsites(WEBSITES);
 
     localStorage.setItem(
       STORAGE_KEYS.REPORT_DATA,
@@ -250,6 +263,48 @@ export const useReportData = () => {
       STORAGE_KEYS.UPLOADED_FILES,
       JSON.stringify(initialUploadedFiles)
     );
+    localStorage.setItem(STORAGE_KEYS.WEBSITES, JSON.stringify(WEBSITES));
+
+    setError(null);
+  }, []);
+
+  // Website management functions
+  const addWebsite = useCallback((websiteData: Omit<Website, "id">) => {
+    const newWebsite: Website = {
+      id: `website-${Date.now()}`,
+      ...websiteData,
+    };
+
+    setWebsites((prev) => {
+      const updated = [...prev, newWebsite];
+      localStorage.setItem(STORAGE_KEYS.WEBSITES, JSON.stringify(updated));
+      return updated;
+    });
+
+    setError(null);
+  }, []);
+
+  const updateWebsite = useCallback(
+    (id: string, websiteData: Omit<Website, "id">) => {
+      setWebsites((prev) => {
+        const updated = prev.map((website) =>
+          website.id === id ? { ...website, ...websiteData } : website
+        );
+        localStorage.setItem(STORAGE_KEYS.WEBSITES, JSON.stringify(updated));
+        return updated;
+      });
+
+      setError(null);
+    },
+    []
+  );
+
+  const deleteWebsite = useCallback((id: string) => {
+    setWebsites((prev) => {
+      const updated = prev.filter((website) => website.id !== id);
+      localStorage.setItem(STORAGE_KEYS.WEBSITES, JSON.stringify(updated));
+      return updated;
+    });
 
     setError(null);
   }, []);
@@ -257,6 +312,7 @@ export const useReportData = () => {
   return {
     reportData,
     uploadedFiles,
+    websites,
     loading,
     error,
     uploadFile,
@@ -266,5 +322,8 @@ export const useReportData = () => {
     deleteMultipleRecords,
     clearData,
     resetAllData,
+    addWebsite,
+    updateWebsite,
+    deleteWebsite,
   };
 };

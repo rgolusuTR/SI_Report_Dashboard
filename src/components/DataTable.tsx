@@ -20,7 +20,7 @@ export const DataTable: React.FC<DataTableProps> = ({
   const [sortField, setSortField] = useState<string>("");
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
   const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage] = useState(10);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
   const [selectedRows, setSelectedRows] = useState<Set<string>>(new Set());
 
   const handleSort = (field: string) => {
@@ -274,13 +274,33 @@ export const DataTable: React.FC<DataTableProps> = ({
       </div>
 
       {/* Pagination */}
-      {totalPages > 1 && (
-        <div className="px-6 py-3 border-t border-gray-200 flex items-center justify-between">
+      <div className="px-6 py-3 border-t border-gray-200 flex items-center justify-between">
+        <div className="flex items-center gap-4">
           <div className="text-sm text-gray-500">
             Showing {(currentPage - 1) * itemsPerPage + 1} to{" "}
             {Math.min(currentPage * itemsPerPage, sortedData.length)} of{" "}
             {sortedData.length} entries
           </div>
+          <div className="flex items-center gap-2">
+            <label className="text-sm text-gray-600">Show:</label>
+            <select
+              value={itemsPerPage}
+              onChange={(e) => {
+                setItemsPerPage(Number(e.target.value));
+                setCurrentPage(1); // Reset to first page when changing page size
+              }}
+              className="text-sm border border-gray-300 rounded px-2 py-1 focus:ring-blue-500 focus:border-blue-500"
+            >
+              <option value={10}>10</option>
+              <option value={25}>25</option>
+              <option value={50}>50</option>
+              <option value={100}>100</option>
+              <option value={200}>200</option>
+            </select>
+            <span className="text-sm text-gray-600">per page</span>
+          </div>
+        </div>
+        {totalPages > 1 && (
           <div className="flex gap-2">
             <button
               onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
@@ -302,8 +322,8 @@ export const DataTable: React.FC<DataTableProps> = ({
               Next
             </button>
           </div>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   );
 };

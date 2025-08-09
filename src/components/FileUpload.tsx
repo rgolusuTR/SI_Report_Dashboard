@@ -1,92 +1,125 @@
-import React, { useCallback, useState } from 'react';
-import { Upload, File, CheckCircle, AlertCircle, X } from 'lucide-react';
-import { WEBSITES, REPORT_TYPES } from '../constants';
+import React, { useCallback, useState } from "react";
+import { Upload, File, CheckCircle, AlertCircle, X } from "lucide-react";
+import { REPORT_TYPES } from "../constants";
+import { Website } from "../types";
 
 interface FileUploadProps {
-  onFileUpload: (file: File, website: string, reportType: string) => Promise<{ success: boolean; rowCount?: number; error?: string }>;
+  onFileUpload: (
+    file: File,
+    website: string,
+    reportType: string
+  ) => Promise<{ success: boolean; rowCount?: number; error?: string }>;
   loading: boolean;
+  websites: Website[];
 }
 
-export const FileUpload: React.FC<FileUploadProps> = ({ onFileUpload, loading }) => {
+export const FileUpload: React.FC<FileUploadProps> = ({
+  onFileUpload,
+  loading,
+  websites,
+}) => {
   const [dragActive, setDragActive] = useState(false);
-  const [selectedWebsite, setSelectedWebsite] = useState('');
-  const [selectedReportType, setSelectedReportType] = useState('');
-  const [uploadStatus, setUploadStatus] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
+  const [selectedWebsite, setSelectedWebsite] = useState("");
+  const [selectedReportType, setSelectedReportType] = useState("");
+  const [uploadStatus, setUploadStatus] = useState<{
+    message: string;
+    type: "success" | "error";
+  } | null>(null);
 
   const handleDrag = useCallback((e: React.DragEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    if (e.type === 'dragenter' || e.type === 'dragover') {
+    if (e.type === "dragenter" || e.type === "dragover") {
       setDragActive(true);
-    } else if (e.type === 'dragleave') {
+    } else if (e.type === "dragleave") {
       setDragActive(false);
     }
   }, []);
 
-  const handleDrop = useCallback((e: React.DragEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setDragActive(false);
-    
-    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-      handleFile(e.dataTransfer.files[0]);
-    }
-  }, [selectedWebsite, selectedReportType]);
+  const handleDrop = useCallback(
+    (e: React.DragEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
+      setDragActive(false);
+
+      if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+        handleFile(e.dataTransfer.files[0]);
+      }
+    },
+    [selectedWebsite, selectedReportType]
+  );
 
   const handleFile = async (file: File) => {
-    console.log('Processing file:', file.name, 'Website:', selectedWebsite, 'Report Type:', selectedReportType);
-    
+    console.log(
+      "Processing file:",
+      file.name,
+      "Website:",
+      selectedWebsite,
+      "Report Type:",
+      selectedReportType
+    );
+
     if (!selectedWebsite || !selectedReportType) {
-      setUploadStatus({ message: 'Please select website and report type first', type: 'error' });
+      setUploadStatus({
+        message: "Please select website and report type first",
+        type: "error",
+      });
       return;
     }
 
     // Validate file type
-    const validExtensions = ['.csv', '.xlsx', '.xls'];
-    const fileExtension = file.name.toLowerCase().substring(file.name.lastIndexOf('.'));
-    
+    const validExtensions = [".csv", ".xlsx", ".xls"];
+    const fileExtension = file.name
+      .toLowerCase()
+      .substring(file.name.lastIndexOf("."));
+
     if (!validExtensions.includes(fileExtension)) {
-      setUploadStatus({ 
-        message: 'Invalid file type. Please upload CSV or Excel files (.csv, .xlsx, .xls)', 
-        type: 'error' 
+      setUploadStatus({
+        message:
+          "Invalid file type. Please upload CSV or Excel files (.csv, .xlsx, .xls)",
+        type: "error",
       });
       return;
     }
 
     try {
       setUploadStatus(null);
-      const result = await onFileUpload(file, selectedWebsite, selectedReportType);
-      
+      const result = await onFileUpload(
+        file,
+        selectedWebsite,
+        selectedReportType
+      );
+
       if (result.success) {
-        setUploadStatus({ 
-          message: `Successfully uploaded ${file.name} with ${result.rowCount} records`, 
-          type: 'success' 
+        setUploadStatus({
+          message: `Successfully uploaded ${file.name} with ${result.rowCount} records`,
+          type: "success",
         });
         // Reset selections after successful upload
-        setSelectedWebsite('');
-        setSelectedReportType('');
+        setSelectedWebsite("");
+        setSelectedReportType("");
       } else {
-        setUploadStatus({ 
-          message: result.error || 'Upload failed', 
-          type: 'error' 
+        setUploadStatus({
+          message: result.error || "Upload failed",
+          type: "error",
         });
       }
     } catch (error) {
-      console.error('Upload error:', error);
-      setUploadStatus({ 
-        message: 'An unexpected error occurred during upload', 
-        type: 'error' 
+      console.error("Upload error:", error);
+      setUploadStatus({
+        message: "An unexpected error occurred during upload",
+        type: "error",
       });
     }
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    console.log('File input changed:', e.target.files);
+    console.log("File input changed:", e.target.files);
     if (e.target.files && e.target.files[0]) {
       handleFile(e.target.files[0]);
     }
     // Reset the input value to allow re-uploading the same file
-    e.target.value = '';
+    e.target.value = "";
   };
 
   const canUpload = selectedWebsite && selectedReportType && !loading;
@@ -97,14 +130,16 @@ export const FileUpload: React.FC<FileUploadProps> = ({ onFileUpload, loading })
         <Upload className="h-6 w-6 text-blue-600" />
         Upload Siteimprove Report
       </h2>
-      
+
       {uploadStatus && (
-        <div className={`mb-4 p-4 rounded-lg flex items-center gap-2 ${
-          uploadStatus.type === 'success' 
-            ? 'bg-green-50 text-green-800 border border-green-200' 
-            : 'bg-red-50 text-red-800 border border-red-200'
-        }`}>
-          {uploadStatus.type === 'success' ? (
+        <div
+          className={`mb-4 p-4 rounded-lg flex items-center gap-2 ${
+            uploadStatus.type === "success"
+              ? "bg-green-50 text-green-800 border border-green-200"
+              : "bg-red-50 text-red-800 border border-red-200"
+          }`}
+        >
+          {uploadStatus.type === "success" ? (
             <CheckCircle className="h-5 w-5" />
           ) : (
             <AlertCircle className="h-5 w-5" />
@@ -118,7 +153,7 @@ export const FileUpload: React.FC<FileUploadProps> = ({ onFileUpload, loading })
           </button>
         </div>
       )}
-      
+
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -131,14 +166,14 @@ export const FileUpload: React.FC<FileUploadProps> = ({ onFileUpload, loading })
             required
           >
             <option value="">Select website...</option>
-            {WEBSITES.map(website => (
+            {websites.map((website: Website) => (
               <option key={website.id} value={website.id}>
                 {website.name} ({website.domain})
               </option>
             ))}
           </select>
         </div>
-        
+
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
             Report Type *
@@ -150,7 +185,7 @@ export const FileUpload: React.FC<FileUploadProps> = ({ onFileUpload, loading })
             required
           >
             <option value="">Select report type...</option>
-            {REPORT_TYPES.map(type => (
+            {REPORT_TYPES.map((type) => (
               <option key={type.id} value={type.id}>
                 {type.name}
               </option>
@@ -158,15 +193,15 @@ export const FileUpload: React.FC<FileUploadProps> = ({ onFileUpload, loading })
           </select>
         </div>
       </div>
-      
+
       <div
         className={`relative border-2 border-dashed rounded-lg p-8 text-center transition-all duration-200 ${
           dragActive
-            ? 'border-blue-500 bg-blue-50 scale-105'
-            : canUpload 
-              ? 'border-gray-300 hover:border-blue-400 hover:bg-gray-50'
-              : 'border-gray-200 bg-gray-50'
-        } ${loading ? 'opacity-50 pointer-events-none' : ''}`}
+            ? "border-blue-500 bg-blue-50 scale-105"
+            : canUpload
+            ? "border-gray-300 hover:border-blue-400 hover:bg-gray-50"
+            : "border-gray-200 bg-gray-50"
+        } ${loading ? "opacity-50 pointer-events-none" : ""}`}
         onDragEnter={handleDrag}
         onDragLeave={handleDrag}
         onDragOver={handleDrag}
@@ -180,25 +215,28 @@ export const FileUpload: React.FC<FileUploadProps> = ({ onFileUpload, loading })
           disabled={loading || !canUpload}
           id="file-upload"
         />
-        
-        <File className={`h-12 w-12 mx-auto mb-4 transition-colors ${
-          canUpload ? 'text-blue-500' : 'text-gray-400'
-        }`} />
-        
+
+        <File
+          className={`h-12 w-12 mx-auto mb-4 transition-colors ${
+            canUpload ? "text-blue-500" : "text-gray-400"
+          }`}
+        />
+
         <div className="space-y-2">
-          <p className={`text-lg font-medium transition-colors ${
-            loading 
-              ? 'text-gray-500' 
-              : canUpload 
-                ? 'text-gray-700' 
-                : 'text-gray-500'
-          }`}>
-            {loading 
-              ? 'Processing file...' 
+          <p
+            className={`text-lg font-medium transition-colors ${
+              loading
+                ? "text-gray-500"
+                : canUpload
+                ? "text-gray-700"
+                : "text-gray-500"
+            }`}
+          >
+            {loading
+              ? "Processing file..."
               : canUpload
-                ? 'Drop your file here or click to browse'
-                : 'Please select website and report type first'
-            }
+              ? "Drop your file here or click to browse"
+              : "Please select website and report type first"}
           </p>
           <p className="text-sm text-gray-500">
             Supports CSV and Excel files (.csv, .xlsx, .xls)
@@ -219,7 +257,10 @@ export const FileUpload: React.FC<FileUploadProps> = ({ onFileUpload, loading })
         <h4 className="font-medium text-blue-800 mb-2">Upload Instructions:</h4>
         <ul className="text-sm text-blue-700 space-y-1">
           <li>• Select the website and report type before uploading</li>
-          <li>• Ensure your file follows the Siteimprove format (data starts from row 4)</li>
+          <li>
+            • Ensure your file follows the Siteimprove format (data starts from
+            row 4)
+          </li>
           <li>• Supported formats: CSV (.csv), Excel (.xlsx, .xls)</li>
           <li>• Files will be automatically parsed and validated</li>
         </ul>

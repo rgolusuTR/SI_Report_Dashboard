@@ -11,6 +11,7 @@ function App() {
   const {
     reportData,
     uploadedFiles,
+    websites,
     loading,
     error,
     uploadFile,
@@ -18,6 +19,9 @@ function App() {
     deleteRecord,
     deleteMultipleRecords,
     resetAllData,
+    addWebsite,
+    updateWebsite,
+    deleteWebsite,
   } = useReportData();
 
   return (
@@ -39,7 +43,11 @@ function App() {
 
         {currentView === "upload" && (
           <div className="space-y-6">
-            <FileUpload onFileUpload={uploadFile} loading={loading} />
+            <FileUpload
+              onFileUpload={uploadFile}
+              loading={loading}
+              websites={websites}
+            />
 
             {uploadedFiles.length > 0 && (
               <div className="bg-white rounded-lg shadow-md p-6">
@@ -136,8 +144,12 @@ function App() {
             ) : (
               <Dashboard
                 data={reportData}
+                websites={websites}
                 onDeleteRecord={deleteRecord}
                 onDeleteMultipleRecords={deleteMultipleRecords}
+                onAddWebsite={addWebsite}
+                onUpdateWebsite={updateWebsite}
+                onDeleteWebsite={deleteWebsite}
               />
             )}
           </>
